@@ -1,5 +1,6 @@
 import holtek_impl
 import sys
+import msvcrt
 
 
 def OutputAll(impl):
@@ -41,7 +42,13 @@ OutputAll(impl)
 
 impl.Start()
 
-while impl.HasNext():
-    print("-----")
-    impl.Execute()
-    OutputAll(impl)
+print("----- press any key to continue or CTRL+C to stop -----")
+
+while True:
+    while impl.HasNext():
+        if msvcrt.kbhit():
+            key_stroke = msvcrt.getch()
+            impl.Execute()
+            OutputAll(impl)
+            print("----- press any key to continue or CTRL+C to stop -----")
+
