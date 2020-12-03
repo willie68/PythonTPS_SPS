@@ -12,12 +12,11 @@ def OutputAll(impl):
 
 def ReadTPSFile(filename):
     program = []
-    f = open("blink.tps", "r")
+    f = open(filename, "r")
     for x in f:
         if not x.startswith('#'):
             li = x.split(",")
             cmd = int("0x" + li[1] + li[2], 16)
-            print(cmd)
             program.append(cmd)
     f.close()
     return program
@@ -28,18 +27,18 @@ if len(sys.argv) != 2:
 
 filename = sys.argv[1]
 
-impl = holtek_impl.Holtek("blink.tps")
+impl = holtek_impl.Holtek(filename)
 impl.SPSActive = True
 
-program = ReadTPSFile("Blink.tps")
-print(impl.getName())
-print(impl.program)
+print("reading file:" + filename)
+program = ReadTPSFile(filename)
 
+print("name:" + impl.getName())
 impl.load(bytearray(program))
 
-print(impl.program)
-OutputAll(impl)
+print("program size:" + str(len(impl.program)))
 
+print("start emulator")
 impl.Start()
 
 print("----- press any key to continue or CTRL+C to stop -----")
