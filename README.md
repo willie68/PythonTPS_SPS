@@ -1,2 +1,2 @@
 # PythonTPS_SPS
-A TPS/SPS interpreter/emulator writtne in python
+A TPS/SPS interpreter/emulator written in python
