@@ -4,13 +4,14 @@ import sys
 import msvcrt
 import getopt
 import ui
+from pathlib import Path
+from intelhex import IntelHex
 
 def OutputAll(impl):
     impl.Input.Print()
+    print("cmd: 0x{:X}".format(impl.cmd))
     impl.Output.Print()
     impl.Register.Print(impl.SPSActive)
-    print("cmd: 0x{:X}".format(impl.cmd))
-
 
 def ReadTPSFile(filename):
     program = []
@@ -21,6 +22,12 @@ def ReadTPSFile(filename):
             cmd = int("0x" + li[1] + li[2], 16)
             program.append(cmd)
     f.close()
+    return program
+
+def ReadHEXFile(filename):
+    program = []
+    ih = IntelHex(filename)
+    program = ih.tobinarray()
     return program
 
 def usage():
@@ -71,7 +78,19 @@ impl.SPSActive = extension
 window = 0
 
 output("reading file:" + filename)
-program = ReadTPSFile(filename)
+if not Path(filename).is_file():
+    print("file not exists.")
+    usage()
+    sys.exit(1)
+
+if filename.lower().endswith(".tps"):
+    program = ReadTPSFile(filename)
+elif filename.lower().endswith(".hex"):
+    program = ReadHEXFile(filename)
+else:
+    print("unknown file format.")
+    usage()
+    sys.exit(1)
 
 output("name:" + impl.getName())
 impl.load(bytearray(program))
