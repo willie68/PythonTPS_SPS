@@ -5,30 +5,13 @@ import msvcrt
 import getopt
 import ui
 from pathlib import Path
-from intelhex import IntelHex
+import utils, const
 
 def OutputAll(impl):
     impl.Input.Print()
-    print("cmd: 0x{:X}".format(impl.cmd))
+    print("cmd: 0x{:X} : {}".format(impl.cmd, commandSet.GetCommentsForCommand(impl.cmd)))
     impl.Output.Print()
     impl.Register.Print(impl.SPSActive)
-
-def ReadTPSFile(filename):
-    program = []
-    f = open(filename, "r")
-    for x in f:
-        if not x.startswith('#'):
-            li = x.split(",")
-            cmd = int("0x" + li[1] + li[2], 16)
-            program.append(cmd)
-    f.close()
-    return program
-
-def ReadHEXFile(filename):
-    program = []
-    ih = IntelHex(filename)
-    program = ih.tobinarray()
-    return program
 
 def usage():
     print('tps.py [-h] [--ui] [--extension] <TPS FILE>')
@@ -45,6 +28,7 @@ def output(message):
 # defining the defaults for this program
 extension = False
 displayGUI = False
+commandSet = const.CommandSet()
 
 #parsing the command line
 try:
@@ -84,9 +68,9 @@ if not Path(filename).is_file():
     sys.exit(1)
 
 if filename.lower().endswith(".tps"):
-    program = ReadTPSFile(filename)
+    program = utils.ReadTPSFile(filename)
 elif filename.lower().endswith(".hex"):
-    program = ReadHEXFile(filename)
+    program = utils.ReadHEXFile(filename)
 else:
     print("unknown file format.")
     usage()
