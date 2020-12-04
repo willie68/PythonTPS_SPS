@@ -5,6 +5,8 @@ class CommandSet:
 
     commands = {0x00: "NOP", 0x10: "Output", 0x20: "Delay", 0x30: "Jump Back", 0x40: "A=", 0x50: "*=A", 0x60: "A=*", 0x70: "CALC",
                 0x80: "PAGE", 0x90: "Jump", 0xA0: "Jump if C", 0xB0: "Jump if D", 0xC0: "Skip", 0xD0: "Call", 0xE0: "Ret/Callsub", 0xF0: "Byte"}
+    cmdSkip = {0x0: "A==0", 0x1: "A>B", 0x2: "A<B", 0x3: "A==B", 0x4: "Din1==1", 0x5: "Din2==1", 0x6: "Din3==1", 0x7: "Din4==1",
+               0x8: "Din1==0", 0x9: "Din2==0", 0xA: "Din3==0", 0xB: "Din4==0", 0xC: "PRG==0", 0xD: "SEL==0", 0xE: "PRG==1", 0xF: "SEL==1"}
 
     def GetCommentsForCommand(self, command):
         if command < 0x10:
@@ -32,7 +34,7 @@ class CommandSet:
         elif command < 0xC0:
             return self.commands[0xB0] + " {:d}".format(command & 0x0F)
         elif command < 0xD0:
-            return self.commands[0xC0] + " {:d}".format(command & 0x0F)
+            return self.commands[0xC0] + " {}".format(self.cmdSkip[command & 0x0F])
         elif command < 0xE0:
             return self.commands[0xD0] + " Page * 16 + {:d}".format(command & 0x0F)
         elif command < 0xF0:
