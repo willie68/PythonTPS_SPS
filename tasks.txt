@@ -1,8 +1,11 @@
 activate venv on powershell, if scripts are not allowed
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 
-freeze the requiroments
+freeze the requirements
 pip freeze > requirements.txt
+
+install requirements
+pip install -r requirements.txt
 
 activate enviroment
 .\.venv\Scripts\activate
