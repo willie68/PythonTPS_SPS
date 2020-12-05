@@ -5,13 +5,17 @@ import msvcrt
 import getopt
 import ui
 from pathlib import Path
-import utils, const
+import utils
+import const
+
 
 def OutputAll(impl):
     impl.Input.Print()
-    print("cmd: 0x{:X} : {}".format(impl.cmd, commandSet.GetCommentsForCommand(impl.cmd)))
+    print("cmd: 0x{:X} : {}".format(
+        impl.cmd, commandSet.GetCommentsForCommand(impl.cmd)))
     impl.Output.Print()
     impl.Register.Print(impl.SPSActive)
+
 
 def usage():
     print('tps.py [-h] [--ui] [--extension] <TPS FILE>')
@@ -19,20 +23,23 @@ def usage():
     print("--ui create graphical interface")
     print("--extension activate SPS extensions")
 
+
 def output(message):
     if isinstance(window, ui.MainUI):
         window.Output(message)
     else:
         print(message)
 
+
 # defining the defaults for this program
 extension = False
 displayGUI = False
 commandSet = const.CommandSet()
 
-#parsing the command line
+# parsing the command line
 try:
-    opts, args = getopt.getopt(sys.argv[1:],"hue",["help", "ui", "extension"])
+    opts, args = getopt.getopt(sys.argv[1:], "hue", [
+                               "help", "ui", "extension"])
 except getopt.GetoptError:
     usage()
     sys.exit(2)
@@ -81,7 +88,7 @@ impl.load(bytearray(program))
 
 output("program size:" + str(len(impl.program)))
 
-#wrapping up the ui
+# wrapping up the ui
 if displayGUI:
     window = ui.MainUI()
     window.emulator = impl
@@ -99,4 +106,3 @@ else:
                 impl.Execute()
                 OutputAll(impl)
                 output("----- press any key to continue or CTRL+C to stop -----")
-
