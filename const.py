@@ -12,9 +12,9 @@ class CommandSet:
         if command < 0x10:
             return self.commands[0x00]
         elif 0x10 <= command < 0x20:
-            return self.commands[0x10] + " {:04b}".format(command & 0x0F)
+            return self.commands[0x10] + " ({:x}) {:04b}".format(command & 0x0F, command & 0x0F)
         elif command < 0x30:
-            return self.commands[0x20] + " {:d}ms".format(self.DELAYTIMES[command & 0x0F])
+            return self.commands[0x20] + " ({:x})  {:d}ms".format(command & 0x0F, self.DELAYTIMES[command & 0x0F])
         elif command < 0x40:
             return self.commands[0x30] + " -{:d}".format(command & 0x0F)
         elif command < 0x50:

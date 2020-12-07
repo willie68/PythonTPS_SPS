@@ -1,7 +1,8 @@
 from time import sleep
 from collections import deque
 from utils import constrain
- 
+
+
 class Input:
     def __init__(self):
         self.Din_0 = False
@@ -14,13 +15,10 @@ class Input:
         self.RC_2 = 0
         self.PRG = False
         self.SEL = False
-    
+
     def Print(self):
-        print("Input: " + ("X" if self.Din_3 else "0") 
-        + ("X" if self.Din_2 else "0") 
-        + ("X" if self.Din_1 else "0") 
-        + ("X" if self.Din_0 else "0"))
-        print("ADC_1: {} ADC_2: {} RC_1: {} RC_2: {}".format(self.ADC_1 , self.ADC_2, self.RC_1 , self.RC_2)) 
+        print("Input: {}{}{}{} ADC_1: {} ADC_2: {} RC_1: {} RC_2: {}".format(("X" if self.Din_3 else "0"), ("X" if self.Din_2 else "0"),
+                                                                             ("X" if self.Din_1 else "0"), ("X" if self.Din_0 else "0"), self.ADC_1, self.ADC_2, self.RC_1, self.RC_2))
         print("SEL: {} PRG: {}".format(self.SEL, self.PRG))
 
 
@@ -29,11 +27,8 @@ class Output:
         self.Reset()
 
     def Print(self):
-        print("Output: " + ("X" if self.Dout_3 else "0") 
-        + ("X" if self.Dout_2 else "0") 
-        + ("X" if self.Dout_1 else "0") 
-        + ("X" if self.Dout_0 else "0"))
-        print("PWM_1: {} PWM_2: {} Servo_1: {} Servo_2: {}".format(self.PWM_1, self.PWM_2, self.Servo_1, self.Servo_2)) 
+        print("Output: {}{}{}{} PWM_1: {} PWM_2: {} Servo_1: {} Servo_2: {}".format(("X" if self.Dout_3 else "0"), ("X" if self.Dout_2 else "0"),
+                                                                                    ("X" if self.Dout_1 else "0"), ("X" if self.Dout_0 else "0"), self.PWM_1, self.PWM_2, self.Servo_1, self.Servo_2))
 
     def Reset(self):
         self.Dout_0 = False
@@ -45,15 +40,18 @@ class Output:
         self.Servo_1 = 0
         self.Servo_2 = 0
 
+
 class Register:
     def __init__(self):
         self.Reset()
 
     def Print(self, SPSActive):
         if SPSActive:
-            print("Addr: {} Page: {} A: {} B: {} C: {} D: {} E: {} F: {}".format(self.Addr,self.Page,self.A,self.B,self.C,self.D,self.E,self.F))
+            print("Page: {} Addr: {} A: {} B: {} C: {} D: {} E: {} F: {}".format(
+                self.Page, self.Addr, self.A, self.B, self.C, self.D, self.E, self.F))
         else:
-            print("Addr: {} Page: {} A: {} B: {} C: {} D: {}".format(self.Addr,self.Page,self.A,self.B,self.C,self.D))
+            print("Page: {} Addr: {} A: {} B: {} C: {} D: {}".format(
+                self.Page, self.Addr, self.A, self.B, self.C, self.D))
 
     def Reset(self):
         self.Addr = 0
@@ -67,10 +65,10 @@ class Register:
         self.Stack = deque()
 
 
-
 class Holtek:
-    DELAYTIMES = [1 , 2 , 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 30000, 60000]
-    
+    DELAYTIMES = [1, 2, 5, 10, 20, 50, 100, 200, 500,
+                  1000, 2000, 5000, 10000, 20000, 30000, 60000]
+
     def __init__(self, filename):
         self.filename = filename
         self.program = []
@@ -92,19 +90,19 @@ class Holtek:
         if type(program) == bytearray:
             self.program = program
 
-    def Start(self): 
+    def Start(self):
         self.Register.Reset()
 
     def HasNext(self):
         return True if self.Register.Addr < len(self.program) else False
 
     def doPort(self, value):
-        self.Output.Dout_0 = value & 0x01 
-        self.Output.Dout_1 = value & 0x02 
-        self.Output.Dout_2 = value & 0x04 
-        self.Output.Dout_3 = value & 0x08 
-    
-    def doIsA(self, value): 
+        self.Output.Dout_0 = value & 0x01
+        self.Output.Dout_1 = value & 0x02
+        self.Output.Dout_2 = value & 0x04
+        self.Output.Dout_3 = value & 0x08
+
+    def doIsA(self, value):
         if value == 0:
             tmp = self.Register.A
             self.Register.A = self.Register.B
@@ -140,8 +138,8 @@ class Holtek:
         elif value == 15:
             if self.Register.Stack.count < 17:
                 self.Register.Stack.append(self.Register.A)
-        
-    def doAIs(self, value): 
+
+    def doAIs(self, value):
         if value == 1:
             self.Register.A = self.Register.B
         elif value == 2:
@@ -149,7 +147,8 @@ class Holtek:
         elif value == 3:
             self.Register.A = self.Register.D
         elif value == 4:
-            self.Register.A = 1 if self.Input.Din_0 else 0 + 2 if self.Input.Din_1 else 0 + 4 if self.Input.Din_2 else 0 + 8 if self.Input.Din_3 else 0 
+            self.Register.A = 1 if self.Input.Din_0 else 0 + 2 if self.Input.Din_1 else 0 + \
+                4 if self.Input.Din_2 else 0 + 8 if self.Input.Din_3 else 0
         elif value == 5:
             self.Register.A = 1 if self.Input.Din_0 else 0
         elif value == 6:
@@ -174,7 +173,7 @@ class Holtek:
             if self.Register.Stack.count > 0:
                 self.Register.A = self.Register.Stack.pop()
 
-    def doCalc(self, value): 
+    def doCalc(self, value):
         if value == 1:
             self.Register.A += 1
         elif value == 2:
@@ -258,11 +257,11 @@ class Holtek:
         elif value == 7:
             self.Output.Servo_2 = constrain(self.Register.A, 0, 255)
 
-    def Execute(self): 
+    def Execute(self):
         addr = self.Register.Addr
         if addr >= len(self.program):
-             self.Register.Addr = 0
-             addr = 0
+            self.Register.Addr = 0
+            addr = 0
 
         self.cmd = self.program[addr]
         value = self.cmd & 0x0F
@@ -275,7 +274,7 @@ class Holtek:
         elif 0x10 <= self.cmd < 0x20:
             self.doPort(value)
         elif 0x20 <= self.cmd < 0x30:
-            sleep(self.DELAYTIMES[value] /  1000)    
+            sleep(self.DELAYTIMES[value] / 1000)
         elif 0x30 <= self.cmd < 0x40:
             self.Register.Addr -= (value + 1)
         elif 0x40 <= self.cmd < 0x50:
@@ -304,7 +303,7 @@ class Holtek:
         elif 0xC0 <= self.cmd < 0xD0:
             Skip = doSkip(value)
         elif 0xD0 <= self.cmd < 0xE0:
-            Return =  self.Register.Addr + 1
+            Return = self.Register.Addr + 1
             self.Register.Addr = value + self.Register.Page * 8
             addrInc = False
         elif 0xE0 <= self.cmd < 0xF0:
@@ -321,8 +320,8 @@ class Holtek:
                 self.doReset()
                 addrInc = False
 
-
-        if Skip: self.Register.Addr+=1
-        if addrInc: self.Register.Addr+=1
+        if Skip:
+            self.Register.Addr += 1
+        if addrInc:
+            self.Register.Addr += 1
         return True if self.Register.Addr < 10 else False
-    
