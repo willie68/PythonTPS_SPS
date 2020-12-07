@@ -10,11 +10,12 @@ import const
 
 
 def OutputAll(impl):
+    print("-----")
+    impl.Register.Print(impl.SPSActive)
     impl.Input.Print()
     print("cmd: 0x{:X} : {}".format(
         impl.cmd, commandSet.GetCommentsForCommand(impl.cmd)))
     impl.Output.Print()
-    impl.Register.Print(impl.SPSActive)
 
 
 def usage():
@@ -96,6 +97,7 @@ if displayGUI:
 else:
     output("start emulator")
     impl.Start()
+    OutputAll(impl)
 
     output("----- press any key to continue or CTRL+C to stop -----")
 
