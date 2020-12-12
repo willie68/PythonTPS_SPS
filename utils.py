@@ -1,4 +1,6 @@
 from intelhex import IntelHex
+import requests
+import sys
 
 def constrain(x, a, b):
     if x < a: 
@@ -22,4 +24,29 @@ def ReadHEXFile(filename):
     program = []
     ih = IntelHex(filename)
     program = ih.tobinarray()
+    return program
+
+def GetTPSASSFile(filename):
+    program = []
+    f = open(filename, "r")
+    data = f.read()
+    f.close()
+    print("----- source -----")
+    print(data)
+    url = 'http://wkla.no-ip.biz/tps/assembler/ass.php'
+    myobj = {'name': 'blink.tpsasm', 'dest': 'ARDUINOSPS', 'output': 'INTELHEX', "source": data }
+
+    x = requests.post(url, data = myobj)
+    if x.status_code == 200:
+        inteltext = x.text
+        print("----- hex -----")
+        print(inteltext)
+        ih = IntelHex()
+        ih.frombytes(bytearray(inteltext.encode("utf-8")))
+        program = ih.tobinarray()
+    else:
+        print("----- error -----")
+        print("code: {} \r\n {}".format(x.status_code, x.text))
+        x.raise_for_status()
+    print(program)
     return program

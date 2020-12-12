@@ -79,6 +79,8 @@ if filename.lower().endswith(".tps"):
     program = utils.ReadTPSFile(filename)
 elif filename.lower().endswith(".hex"):
     program = utils.ReadHEXFile(filename)
+elif filename.lower().endswith(".tpsasm"):
+    program = utils.GetTPSASSFile(filename)
 else:
     print("unknown file format.")
     usage()
