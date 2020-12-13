@@ -114,7 +114,7 @@ class Holtek:
         elif value == 3:
             self.Register.D = self.Register.A
         elif value == 4:
-            doPort(self.Register.A)
+            self.doPort(self.Register.A)
         elif value == 5:
             self.Output.Dout_0 = (self.Register.A & 0x01) > 0
         elif value == 6:
@@ -223,21 +223,21 @@ class Holtek:
         elif value == 7:
             return self.Input.Din_3
         elif value == 8:
-            return self.Input.Din_0 == false
+            return self.Input.Din_0 == False
         elif value == 9:
-            return self.Input.Din_1 == false
+            return self.Input.Din_1 == False
         elif value == 10:
-            return self.Input.Din_2 == false
+            return self.Input.Din_2 == False
         elif value == 11:
-            return self.Input.Din_3 == false
+            return self.Input.Din_3 == False
         elif value == 12:
             return self.Input.PRG
         elif value == 13:
             return self.Input.SEL
         elif value == 14:
-            return self.Input.PRG == false
+            return self.Input.PRG == False
         elif value == 15:
-            return self.Input.SEL == false
+            return self.Input.SEL == False
 
     def doByte(self, value):
         if value == 0:
@@ -280,11 +280,11 @@ class Holtek:
         elif 0x40 <= self.cmd < 0x50:
             self.Register.A = value
         elif 0x50 <= self.cmd < 0x60:
-            doIsA(value)
+            self.doIsA(value)
         elif 0x60 <= self.cmd < 0x70:
-            doAIs(value)
+            self.doAIs(value)
         elif 0x70 <= self.cmd < 0x80:
-            doCalc(value)
+            self.doCalc(value)
         elif 0x80 <= self.cmd < 0x90:
             self.Register.Page = value
         elif 0x90 <= self.cmd < 0xA0:
@@ -301,7 +301,7 @@ class Holtek:
                 self.Register.Addr = value + self.Register.Page * 8
                 addrInc = False
         elif 0xC0 <= self.cmd < 0xD0:
-            Skip = doSkip(value)
+            Skip = self.doSkip(value)
         elif 0xD0 <= self.cmd < 0xE0:
             Return = self.Register.Addr + 1
             self.Register.Addr = value + self.Register.Page * 8
