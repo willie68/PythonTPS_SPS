@@ -7,11 +7,29 @@ A TPS/SPS interpreter/emulator written in python
 2. Copy all file into a folder
 3. Install all requirements with:
    `pip install -r requirements.txt`
-4. Start with the single step execution with:
-   `python tps.py Blink.tps`
+4. Start emulator with the single step execution with:
+   `python tpsemu.py Blink.tps`
 
-You can use TPS files as well as HEX files in IntelHex format. 
+# tpsemu.py
+
+THis is a single step emulator. You can use TPS files as well as HEX files in IntelHex format. 
 
 TPS Files as HEX Files can be created with the windows TPS/SPS Emulator: https://wkla.no-ip.biz/ArduinoWiki/doku.php?id=arduino:arduinosps:spsemu
 
 You can find more information and the Instruction here: https://wkla.no-ip.biz/ArduinoWiki/doku.php?id=arduino:arduinosps
+
+
+
+# tpsasm.py
+
+You can program the tps with an assembler like file. Read here for more information about that:
+
+https://wkla.no-ip.biz/ArduinoWiki/doku.php?id=arduino:arduinosps:tpsass
+
+
+
+With python tpsasm.py <input file> [output filename]
+
+
+
+you can assemble the file to intelhex forat which can directly used with the tps and the tps emulator.

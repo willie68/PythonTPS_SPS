@@ -52,3 +52,8 @@ def GetTPSASSFile(filename):
         x.raise_for_status()
     print(program)
     return program
+
+def WritingIntelHexFile(program, destname):
+    ih = IntelHex()
+    ih.frombytes(program)
+    ih.write_hex_file(destname)
