@@ -1,6 +1,7 @@
 from intelhex import IntelHex
 import requests
 import sys
+import io
 
 def constrain(x, a, b):
     if x < a: 
@@ -24,6 +25,7 @@ def ReadHEXFile(filename):
     program = []
     ih = IntelHex(filename)
     program = ih.tobinarray()
+    print(program)
     return program
 
 def GetTPSASSFile(filename):
@@ -42,7 +44,7 @@ def GetTPSASSFile(filename):
         print("----- hex -----")
         print(inteltext)
         ih = IntelHex()
-        ih.frombytes(bytearray(inteltext.encode("utf-8")))
+        ih.loadhex(io.StringIO(inteltext))
         program = ih.tobinarray()
     else:
         print("----- error -----")

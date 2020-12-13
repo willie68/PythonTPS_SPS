@@ -76,10 +76,13 @@ if not Path(filename).is_file():
     sys.exit(1)
 
 if filename.lower().endswith(".tps"):
+    print("reading tps file {}".format(filename))
     program = utils.ReadTPSFile(filename)
 elif filename.lower().endswith(".hex"):
+    print("reading hex file {}".format(filename))
     program = utils.ReadHEXFile(filename)
 elif filename.lower().endswith(".tpsasm"):
+    print("reading tpsasm file {}".format(filename))
     program = utils.GetTPSASSFile(filename)
 else:
     print("unknown file format.")
