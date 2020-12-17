@@ -1,5 +1,5 @@
 import tkinter as tk
-import holtek_impl
+import Emulator
 import sys
 import msvcrt
 import getopt
@@ -17,7 +17,6 @@ def OutputAll(impl):
     print("cmd: 0x{:X} : {}".format(
         impl.cmd, commandSet.GetCommentsForCommand(impl.cmd)))
     impl.Output.Print()
-
 
 def usage():
     print('tpsasm.py [-h] [--extension|-e] <TPS Assembler file> [intel hex file]')
