@@ -12,7 +12,7 @@ A TPS/SPS interpreter/emulator written in python
 
 # tpsemu.py
 
-THis is a single step emulator. You can use TPS files as well as HEX files in IntelHex format. 
+This is a single step emulator. You can use TPS files as well as HEX files in IntelHex format. 
 
 TPS Files as HEX Files can be created with the windows TPS/SPS Emulator: https://wkla.no-ip.biz/ArduinoWiki/doku.php?id=arduino:arduinosps:spsemu
 
