@@ -4,7 +4,14 @@ This is my implementation of the TPS on Raspberry Pi Pico. The instructions will
 
 # Installation
 
-To install the Pico TPS version, please simply copy the file pico_tps.py to the pico drive.
+At the moment the installation process is quite complicated. So you need to install Thonny IDE for that. (https://thonny.org/)
+
+1. Start the Pico with BOTSEL pressed. A new drive on your PC will appear. 
+2. Copy the firmware rp2-pico-###########.uf2 to this drive. Wait until restart.
+3. Start your Thonny IDE, connect with the Pico. 
+4. Upload the main.py to the Pico. Restart (without BOTSEL). Now TPS is up and running. 
+
+If you brick your Pico, you cant connect with thonny to the Pico, start the Pico with BOTSEL pressed. A new drive on your PC will appear. Copy the firmware MicroPython_RenameMainDotPy.uf2 to this drive. Wait until restart. Than start at the beginning again.
 
 # Command implementation Chart
 
