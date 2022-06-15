@@ -270,8 +270,8 @@ def run():
 			if DT==10:analogOutByte(3, A)
 			if DT==11:servoOutByte(2, A)
 			if DT==12:servoOutByte(3, A)
-			if DT==13:LED.value(1)
-			if DT==14:LED.value(0)
+			if DT==13:Led.value(1)
+			if DT==14:Led.value(0)
 			if DT==15:PC=0;continue
 		A=A&255;B=B&255;C=C&255;D=D&255;E=E&255;F=F&255;PC=(PC+1)%E2E
 	return
