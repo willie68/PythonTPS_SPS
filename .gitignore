@@ -131,3 +131,14 @@ dmypy.json
 # Visual Studio Code files
 .vscode/
 *.code-workspace
+microbitTPS/microbit_tps.hex
+
+microbitTPS/old/mycobitv2.hex
+
+microbitTPS/README.pdf
+
+microbitTPS/V1/blink.hex
+
+microbitTPS/V1/microbit_tps_v1.1.hex
+
+microbitTPS/V1/tps.bin
