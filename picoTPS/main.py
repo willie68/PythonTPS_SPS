@@ -22,7 +22,7 @@ WT=[1,2,5]
 # hardware pins
 DIn=[Pin(6, Pin.IN, Pin.PULL_UP),Pin(7, Pin.IN, Pin.PULL_UP),Pin(8, Pin.IN, Pin.PULL_UP),Pin(9, Pin.IN, Pin.PULL_UP)]
 DOut=[Pin(2,Pin.OUT),Pin(3,Pin.OUT),Pin(4,Pin.OUT),Pin(5,Pin.OUT)]
-AOut=[PWM(Pin(16)),PWM(Pin(17))]
+AOut=[PWM(Pin(16)),PWM(Pin(17)),PWM(Pin(20)),PWM(Pin(21))]
 AIn=[ADC(Pin(26)),ADC(Pin(27))]
 Led = Pin(25,Pin.OUT)
 PRG = Button(11)
@@ -266,6 +266,12 @@ def run():
 			if DT==8:
 				if A==0:TONE.duty_u16(0)
 				if A>0:f=440*2**((A-69)/12);TONE.duty_u16(int(65536*0.2));TONE.freq(int(f))
+			if DT==9:analogOutByte(2, A)
+			if DT==10:analogOutByte(3, A)
+			if DT==11:servoOutByte(2, A)
+			if DT==12:servoOutByte(3, A)
+			if DT==13:LED.value(1)
+			if DT==14:LED.value(0)
 			if DT==15:PC=0;continue
 		A=A&255;B=B&255;C=C&255;D=D&255;E=E&255;F=F&255;PC=(PC+1)%E2E
 	return

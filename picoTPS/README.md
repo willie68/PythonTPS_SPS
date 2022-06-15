@@ -45,10 +45,10 @@ The actual command implementation list:
 | 7    | 7           | 7                              | 7                                                     | 7                                                    | Din.4==1 [DEQ1 4] | 7                         |                | Servo.2=A [BSTA] |
 | 8    | 8           | 8                              | 8                                                     | 8                                                    | Din.1==0 [DEQ0 1] | 8                         | Def 1 [DFSB]   | Tone=A [TONE]    |
 | 9    | 9           | 9                              | 9                                                     | 9                                                    | Din.2==0 [DEQ0 2] | 9                         | 2 [DFSB]       |                  |
-| a    | 10          | 10                             | 10                                                    | 10                                                   | Din.3==0 [DEQ0 3] | 10                        | 3 [DFSB]       |                  |
-| b    | 11          | 11                             | 11                                                    | 11                                                   | Din.4==0 [DEQ0 4] | 11                        | 4 [DFSB]       |                  |
-| c    | 12          | 12                             | 12                                                    | 12                                                   | S_PRG==0 [PRG0]   | 12                        | 5 [DFSB]       |                  |
-| d    | 13          | 13                             | 13                                                    | 13                                                   | S_SEL==0 [SEL0]   | 13                        | 6 [DFSB]       |                  |
+| a    | 10          | 10                             | 10                                                    | 10                                                   | Din.3==0 [DEQ0 3] | 10                        | 3 [DFSB]       | PWM.3=A [BSTA]   |
+| b    | 11          | 11                             | 11                                                    | 11                                                   | Din.4==0 [DEQ0 4] | 11                        | 4 [DFSB]       | PWM.4=A [BSTA]   |
+| c    | 12          | 12                             | 12                                                    | 12                                                   | S_PRG==0 [PRG0]   | 12                        | 5 [DFSB]       | Servo.3=A [BSTA] |
+| d    | 13          | 13                             | 13                                                    | 13                                                   | S_SEL==0 [SEL0]   | 13                        | 6 [DFSB]       | Servo.4=A [BSTA] |
 | e    | 14          | 14                             | 14                                                    | 14                                                   | S_PRG==1 [PRG1]   | 14                        |                |                  |
 | f    | 15          | 15                             | 15                                                    | 15                                                   | S_SEL==1 [SEL1]   | 15                        | restart [REST] | PrgEnd [PEND]    |
 
@@ -62,28 +62,28 @@ The actual command implementation list:
 
 
 
-| pin number | pico function  | TPS function | pin  | pico function | TPS function |
-| ---------- | -------------- | ------------ | ---- | ------------- | ------------ |
-| 1          | GP0            |              | 40   | VBUS          |              |
-| 2          | GP1            |              | 39   | VSYS          |              |
-| 3          | GND            |              | 38   | GND           |              |
-| 4          | GP2            | Dout.1       | 37   | 3V3_EN        |              |
-| 5          | GP3            | Dout.2       | 36   | 3V3           |              |
-| 6          | GP4            | Dout.3       | 35   | ADC_VREF      |              |
-| 7          | GP5            | Dout.4       | 34   | ADC2          |              |
-| 8          | GND            |              | 33   | GND           |              |
-| 9          | GP6            | Din.1        | 32   | ADC1          | ADC.1        |
-| 10         | GP7            | Din.2        | 31   | ADC0          | ADC.0        |
-| 11         | GP8            | Din.3        | 30   | RUN           | Reset        |
-| 12         | GP9            | Din.4        | 29   | GP22          |              |
-| 13         | GND            |              | 28   | GND           |              |
-| 14         | GP10           | SEL          | 27   | GP21          |              |
-| 15         | GP11           | PRG          | 26   | GP20          |              |
-| 16         | GP12, UART0 TX |              | 25   | GP19          |              |
-| 17         | GP13, UART0 RX |              | 24   | GP18          | Tone output  |
-| 18         | GND            |              | 23   | GND           |              |
-| 19         | GP14           | RC.1         | 22   | GP17          | PWM.2        |
-| 20         | GP15           | RC.2         | 21   | GP16          | PWM.1        |
+| pin number | pico function  | TPS function | pin  | pico function | TPS function    |
+| ---------- | -------------- | ------------ | ---- | ------------- | --------------- |
+| 1          | GP0            |              | 40   | VBUS          |                 |
+| 2          | GP1            |              | 39   | VSYS          |                 |
+| 3          | GND            |              | 38   | GND           |                 |
+| 4          | GP2            | Dout.1       | 37   | 3V3_EN        |                 |
+| 5          | GP3            | Dout.2       | 36   | 3V3           |                 |
+| 6          | GP4            | Dout.3       | 35   | ADC_VREF      |                 |
+| 7          | GP5            | Dout.4       | 34   | ADC2          |                 |
+| 8          | GND            |              | 33   | GND           |                 |
+| 9          | GP6            | Din.1        | 32   | ADC1          | ADC.1           |
+| 10         | GP7            | Din.2        | 31   | ADC0          | ADC.0           |
+| 11         | GP8            | Din.3        | 30   | RUN           | Reset           |
+| 12         | GP9            | Din.4        | 29   | GP22          |                 |
+| 13         | GND            |              | 28   | GND           |                 |
+| 14         | GP10           | SEL          | 27   | GP21          | PWM.4 (Servo.4) |
+| 15         | GP11           | PRG          | 26   | GP20          | PWM.3 (Servo.3) |
+| 16         | GP12, UART0 TX |              | 25   | GP19          |                 |
+| 17         | GP13, UART0 RX |              | 24   | GP18          | Tone output     |
+| 18         | GND            |              | 23   | GND           |                 |
+| 19         | GP14           | RC.1         | 22   | GP17          | PWM.2 (Servo.2) |
+| 20         | GP15           | RC.2         | 21   | GP16          | PWM.1 (Servo.1) |
 
 # Debug mode
 
