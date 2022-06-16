@@ -1,12 +1,10 @@
-import tkinter as tk
-import Emulator
+import holtek_impl
 import sys
+import msvcrt
 import getopt
-import ui
 from pathlib import Path
 import utils
 import const
-import tty
 
 
 def OutputAll(impl):
@@ -17,29 +15,25 @@ def OutputAll(impl):
         impl.cmd, commandSet.GetCommentsForCommand(impl.cmd)))
     impl.Output.Print()
 
+
 def usage():
-    print('tps.py [-h] [--ui] [--extension] <TPS FILE>')
+    print('tps.py [-h] [--extension] <TPS FILE>')
     print("-h this help text")
-    print("--ui create graphical interface")
     print("--extension activate SPS extensions")
 
 
 def output(message):
-    if isinstance(window, ui.MainUI):
-        window.Output(message)
-    else:
         print(message)
 
 
 # defining the defaults for this program
 extension = False
-displayGUI = False
 commandSet = const.CommandSet()
 
 # parsing the command line
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hue", [
-                               "help", "ui", "extension"])
+    opts, args = getopt.getopt(sys.argv[1:], "he", [
+                               "help", "extension"])
 except getopt.GetoptError:
     usage()
     sys.exit(2)
@@ -50,8 +44,6 @@ for o, a in opts:
     elif o in ("-h", "--help"):
         usage()
         sys.exit(0)
-    elif o in ("-u", "--ui"):
-        displayGUI = True
     elif o in ("-e", "--extension"):
         extension = True
     else:
@@ -64,9 +56,8 @@ if len(args) == 0:
 filename = args[0]
 
 # initialising the emulator core
-impl = Emulator.TPSSPSEmulator(filename)
+impl = holtek_impl.Holtek(filename)
 impl.SPSActive = extension
-window = 0
 
 output("reading file:" + filename)
 if not Path(filename).is_file():
@@ -93,22 +84,16 @@ impl.load(bytearray(program))
 
 output("program size:" + str(len(impl.program)))
 
-# wrapping up the ui
-if displayGUI:
-    window = ui.MainUI()
-    window.emulator = impl
-    window.insertProgram(program)
-    window.Go()
-else:
-    output("start emulator")
-    impl.Start()
-    OutputAll(impl)
+output("start emulator")
+impl.Start()
+OutputAll(impl)
 
-    output("----- press ENTER to continue or CTRL+C to stop -----")
+output("----- press any key to continue or CTRL+C to stop -----")
 
-    while True:
-        while impl.HasNext():
-            key_stroke = sys.stdin.read(1)
+while True:
+    while impl.HasNext():
+        if msvcrt.kbhit():
+            key_stroke = msvcrt.getch()
             impl.Execute()
             OutputAll(impl)
-            output("----- press ENTER to continue or CTRL+C to stop -----")
+            output("----- press any key to continue or CTRL+C to stop -----")

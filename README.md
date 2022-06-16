@@ -28,8 +28,10 @@ https://wkla.no-ip.biz/ArduinoWiki/doku.php?id=arduino:arduinosps:tpsass
 
 
 
-With python tpsasm.py <input file> [output filename]
+With 
 
+```
+python tpsasm.py <input file> [output filename]
+```
 
-
-you can assemble the file to intelhex forat which can directly used with the tps and the tps emulator.
+you can assemble the file to intelhex format which can directly used with the tps and the tps emulator. This assembler call need an internet connection, because the assembler itself is cloud based and can be used from [here](http://wk-music.de/tps/assembler) , too.
