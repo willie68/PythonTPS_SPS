@@ -1,5 +1,5 @@
 import tkinter as tk
-import holtek_impl
+import Emulator
 import sys
 import msvcrt
 import getopt
@@ -16,7 +16,6 @@ def OutputAll(impl):
     print("cmd: 0x{:X} : {}".format(
         impl.cmd, commandSet.GetCommentsForCommand(impl.cmd)))
     impl.Output.Print()
-
 
 def usage():
     print('tps.py [-h] [--ui] [--extension] <TPS FILE>')
@@ -65,7 +64,7 @@ if len(args) == 0:
 filename = args[0]
 
 # initialising the emulator core
-impl = holtek_impl.Holtek(filename)
+impl = Emulator.TPSSPSEmulator(filename)
 impl.SPSActive = extension
 window = 0
 
@@ -98,6 +97,7 @@ output("program size:" + str(len(impl.program)))
 if displayGUI:
     window = ui.MainUI()
     window.emulator = impl
+    window.insertProgram(program)
     window.Go()
 else:
     output("start emulator")
