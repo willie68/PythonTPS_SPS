@@ -41,6 +41,12 @@ class MainUI(tk.Frame):
         self.emulator = Emulator.TPSSPSEmulator("")
         super().__init__(self.root)
         self.master.geometry("600x300")
+        self.createMenu()
+        self.pack()
+        self.root.title("Python TPS Emulator")
+        self.create_widgets()
+
+    def createMenu(self):
         self.menu = tk.Menu(self)
         self.master.config(menu=self.menu)
         filemenu = tk.Menu(self.menu)
@@ -53,18 +59,16 @@ class MainUI(tk.Frame):
         helpmenu = tk.Menu(self.menu)
         self.menu.add_cascade(label="Help", menu=helpmenu)
         helpmenu.add_command(label="About...", command=self.About)
-        self.pack()
-        self.root.title("Python TPS Emulator")
-        self.create_widgets()
 
     def create_widgets(self):
         self.createToolbar()
         self.createMessageSection()
         self.createSourceSection()
-        self.createInputSection()
+#        self.createInputSection()
 
     def createInputSection(self):
         self.group = tk.LabelFrame(self.root, text='Verbindung')
+        self.group.config(width= 80)
         label = tk.Label(self.group, bg='black', width=80)
         label.pack()
         self.group.pack(side=tk.RIGHT)
@@ -79,7 +83,7 @@ class MainUI(tk.Frame):
 
     def createMessageSection(self):
         self.msgLog = TextScrollCombo(self.root)
-        self.msgLog.pack(fill="both", expand=True)
+        self.msgLog.pack(fill="x", expand=True)
         self.msgLog.config(width=600, height=150)
         self.msgLog.txt.config(font=("consolas", 10), bg='lightgray', undo=True, wrap='none')
         self.msgLog.txt.config(borderwidth=1)
@@ -115,7 +119,7 @@ class MainUI(tk.Frame):
         cmd, self.commandSet.GetCommentsForCommand(cmd)) )
 
     def Output(self, message):
-        self.msgLog.insert(tk.INSERT, message)
+        self.msgLog.txt.insert(tk.INSERT, message + "\r\n")
         print("UI:" + message)
 
     def Go(self):
