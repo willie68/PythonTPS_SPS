@@ -92,21 +92,4 @@ The actual command implementation list:
 | 19         | GP14           | RC.1         | 22   | GP17          | PWM.2 (Servo.2) |
 | 20         | GP15           | RC.2         | 21   | GP16          | PWM.1 (Servo.1) |
 
-# Debug mode
-
-This micro: bit TPS version supports debug and single step mode. In debug mode, additional information is made available on the serial interface while the program is being executed. A terminal program (such as hterm: https://www.der-hammer.info/pages/terminal.html) is required for this. Settings: 115200 baud 8N1.
-
-```
--
-PC: 0000
-INST: 1, DATA: 1
-Register:
-A: 00, B: 00, C: 00
-D: 00, E: 00, F: 00
-Page: 00, Ret: 0000
-```
-
-PC is the program counter. INST and DATA are the nibbles of the command. The current status of the registers is shown under Register. PAGE is the page register and RET contains the return address for a subroutine call (via command 0xD #).
-While the single step mode can only be set via source code, the pure debug mode can be started by touching the logo during a reset.
-
 # Apendix
