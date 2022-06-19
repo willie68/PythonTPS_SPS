@@ -1,12 +1,12 @@
 import tkinter as tk
 import Emulator
 import sys
-import msvcrt
 import getopt
 import ui
 from pathlib import Path
 import utils
 import const
+import tty
 
 
 def OutputAll(impl):
@@ -104,12 +104,11 @@ else:
     impl.Start()
     OutputAll(impl)
 
-    output("----- press any key to continue or CTRL+C to stop -----")
+    output("----- press ENTER to continue or CTRL+C to stop -----")
 
     while True:
         while impl.HasNext():
-            if msvcrt.kbhit():
-                key_stroke = msvcrt.getch()
-                impl.Execute()
-                OutputAll(impl)
-                output("----- press any key to continue or CTRL+C to stop -----")
+            key_stroke = sys.stdin.read(1)
+            impl.Execute()
+            OutputAll(impl)
+            output("----- press ENTER to continue or CTRL+C to stop -----")

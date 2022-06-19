@@ -9,7 +9,7 @@ WAIT 200ms
 .blink
 RJMP :loop
 /* 
-Kommentar über mehrere Zeilen
+multi line comment
 */
 
 .macro macro1 output time
