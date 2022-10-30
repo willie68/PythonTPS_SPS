@@ -1,8 +1,14 @@
+@echo off
 ".\3rd party\GoVersionSetter.exe" -i
 md dest
+echo pre build image
 
-docker build ./ -t pico-tps-builder
+docker build  ./prebuild/ -t tps-pico-prebuild
 
+echo build image with build-tps.sh
+docker build  --no-cache ./ -t pico-tps-builder
+
+echo run tps builder script
 docker run --name pico-tps-builder pico-tps-builder bash
 docker cp pico-tps-builder:/home/pico-tps/micropython/ports/rp2/build-PICO/firmware.uf2 ./dest/pico_tps.uf2
 docker stop pico-tps-builder
