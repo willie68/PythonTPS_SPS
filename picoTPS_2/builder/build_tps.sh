@@ -5,7 +5,7 @@ make fetch-submodules
 
 git checkout main
 
-apt install python3-pip
+apt install python3-pip -y
 
 pip3 install --upgrade -r requirements-dev.txt
 pip3 install --upgrade -r requirements-doc.txt
