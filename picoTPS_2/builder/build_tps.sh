@@ -14,7 +14,7 @@ make -C mpy-cross
 
 pwd
 
-cd ports/rasberrypi
+cd ports/raspberrypi
 
 mkdir modules
 
