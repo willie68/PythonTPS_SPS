@@ -10,7 +10,7 @@ docker build  --no-cache ./ -t pico-tps-builder
 
 echo run tps builder script
 docker run --name pico-tps-builder pico-tps-builder bash
-docker cp pico-tps-builder:/home/pico-tps/circuitpython/ports/raspberrypi/build-PICO/firmware.uf2 ./dest/pico_tps.uf2
+docker cp pico-tps-builder:/home/pico-tps/circuitpython/ports/raspberrypi/build-raspberry_pi_pico/firmware.uf2 ./dest/pico_tps.uf2
 docker stop pico-tps-builder
 @echo off
 echo if you like to look into the container than please break this script at this point. (CTRL-C)

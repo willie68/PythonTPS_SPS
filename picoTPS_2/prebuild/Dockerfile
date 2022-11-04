@@ -9,7 +9,8 @@ RUN set -eux; \
     apt-get install --no-install-recommends --allow-change-held-packages -y\
     git \
     wget \ 
-    python3
+    python3 \
+	python3-pip 
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN apt-get install --no-install-recommends --allow-change-held-packages -y\

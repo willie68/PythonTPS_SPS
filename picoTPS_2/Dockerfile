@@ -10,5 +10,6 @@ RUN mkdir -p /home/pico-tps
 WORKDIR /home/pico-tps
 
 COPY  ./builder/build_tps.sh ./
+COPY  ./main.py ./
 
 RUN ./build_tps.sh
