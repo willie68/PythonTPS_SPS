@@ -1,17 +1,20 @@
-
 import time
-import rp2
 import sys
 import os
 import errno
-from machine import Pin, PWM, ADC
+import board
+import usb_cdc
+from digitalio import DigitalInOut, Direction, Pull
+from pwmio import PWMOut
 
 # classes we need
 class Button:
 	def __init__(self,pin):
-		self.p = Pin(pin, Pin.IN, Pin.PULL_UP)
+		self.p = DigitalInOut(pin)
+		self.p.direction = Direction.INPUT
+		self.p.pull = Pull.UP
 	def is_pressed(self):
-		return not self.p.value()==1
+		return not self.p.value
 # constants
 MINSRV=1500
 MAXSRV=8000
@@ -39,15 +42,18 @@ TFN='tps.bin'
 WT=[1,2,5]
 
 # hardware pins
-DIn=[Pin(6, Pin.IN, Pin.PULL_UP),Pin(7, Pin.IN, Pin.PULL_UP),Pin(8, Pin.IN, Pin.PULL_UP),Pin(9, Pin.IN, Pin.PULL_UP)]
-DOut=[Pin(2,Pin.OUT),Pin(3,Pin.OUT),Pin(4,Pin.OUT),Pin(5,Pin.OUT)]
-AOut=[PWM(Pin(16)),PWM(Pin(17)),PWM(Pin(20)),PWM(Pin(21))]
-AIn=[ADC(Pin(26)),ADC(Pin(27))]
-RCIn=[Pin(14), Pin(15)]
-Led = Pin(25,Pin.OUT)
-PRG = Button(11)
-SEL = Button(10)
-TONE = PWM(Pin(18))
+DIn=[DigitalInOut(board.GP6),DigitalInOut(board.GP7),DigitalInOut(board.GP8),DigitalInOut(board.GP9)]
+DOut=[DigitalInOut(board.GP2),DigitalInOut(board.GP3),DigitalInOut(board.GP4),DigitalInOut(board.GP5)]
+AOut=[PWMOut(board.GP16, frequency=50, duty_cycle=0),PWMOut(board.GP17, frequency=50, duty_cycle=0),PWMOut(board.GP20, frequency=50, duty_cycle=0),PWMOut(board.GP21, frequency=50, duty_cycle=0)]
+#AIn=[ADC(Pin(26)),ADC(Pin(27))]
+#RCIn=[Pin(14), Pin(15)]
+Led = DigitalInOut(board.LED)
+Led.direction = Direction.OUTPUT
+PRG = Button(board.GP11)
+SEL = Button(board.GP10)
+#TONE = PWM(Pin(18))
+#Debug serial
+serial = usb_cdc.data
 def map(a,x1,y1,x2,y2):return int((a-x1)*(y2-x2)/(y1-x1)+x2)
 def write(msg): sys.stdout.write(msg)
 def writeln(msg): sys.stdout.write(msg);sys.stdout.write('\r\n');
@@ -75,29 +81,29 @@ def waitKeyboard():writeln('waiting for command:');writeln('w: write HEX file, r
 
 #output 
 def doOut(data):
-	for i in range(4):DOut[i].value((data&1<<i)>0)
+	for i in range(4):DOut[i].value = (data&1<<i)>0
 #input
 def doIn():
 	t=0
-	for i in range(4):t=t+(DIn[i].value()<<i)
+	for i in range(4):t=t+(DIn[i].value << i)
 	return t
 #pwm output 4 bit
 def analogOut(ch, data):
-	AOut[ch].freq(500)
-	AOut[ch].duty_u16(data << 12)
+	#AOut[ch].frequency=500
+	AOut[ch].duty_cycle=data << 12
 #pwm output 8 bit
 def analogOutByte(ch, data):
-	AOut[ch].freq(500)
-	AOut[ch].duty_u16(data << 8)
+	#AOut[ch].frequency=500
+	AOut[ch].duty_cycle=data << 8
 def servoOut(ch, data):
-	AOut[ch].freq(50)
+	#AOut[ch].frequency=50
 	v = map(data&15,0,15,MINSRV,MAXSRV)
-	AOut[ch].duty_u16(v)
+	AOut[ch].duty_cycle=v
 def servoOutByte(ch, data):
-	AOut[ch].freq(50)
+	#AOut[ch].freq(50)
 	if data > 180: data=180
 	v = map(data,0,180,MINSRV,MAXSRV)
-	AOut[ch].duty_u16(v)
+	AOut[ch].duty_cycle=v
 def waitPRG():
 	while PRG.is_pressed():0
 	
@@ -109,10 +115,16 @@ def rcIn(p):
     return map(t,1000,2000,0,256)
 
 def init():
+	for i in DIn:
+		i.direction=Direction.INPUT
+		i.pull=Pull.UP
+
+	for o in DOut: o.direction = Direction.OUTPUT
+
 	for i in range(E2E):p[i]=255
 	for i in range(6):SB[i]=0
-	for i in range(2):AOut[i].freq(500)
-	TONE.duty_u16(int(65536*0.2))
+	#for i in range(2):AOut[i].freq(500)
+	#TONE.duty_u16(int(65536*0.2))
 	try:
 		f = open(TFN)
 		f.close()
@@ -127,7 +139,7 @@ def serialprg(baud):
 def save(fn):
 	try: os.remove(fn)
 	except OSError as exc:
-		print("error on file: ", errno.errorcode[exc.errno], '\r\n')
+		print("error on file: \r\n", exc)
 	with open(fn,'wb')as mb:mb.write(p)
 
 def load(fn):
@@ -137,7 +149,7 @@ def load(fn):
 		print("error opnening file: ", errno.errorcode[exc.errno], '\r\n')
 
 def sleep(ms):
-	time.sleep_ms(ms)
+	time.sleep(ms/1000)
 
 def blinkAll():
 	blinkNull();
@@ -265,9 +277,9 @@ def initSubs():
 			if DT>=8 and DT<=13:SB[DT-8]=i
 
 def run():
-	Led.value(1)
-	time.sleep_ms(200)
-	Led.value(0)
+	Led.value = 1
+	time.sleep(0.2)
+	Led.value = 0
 	A=0;B=0;C=0;D=0;E=0;F=0;PC=0;PG=0;RT=0;CD=0;DT=0;STP=0
 	
 	load(TFN)
@@ -304,7 +316,7 @@ def run():
 			if DT==2:C=A
 			if DT==3:D=A
 			if DT==4:doOut(A)
-			if DT>4 and DT<=8:DOut[DT-5].value(A&1)
+			if DT>4 and DT<=8:DOut[DT-5].value = A&1
 			if DT>8 and DT<=10:analogOut(DT-9, A)
 			if DT>10 and DT<=12:servoOut(DT-11, A)
 			if DT==13:E=A
@@ -318,7 +330,7 @@ def run():
 			if DT==2:A=C
 			if DT==3:A=D
 			if DT==4:A=doIn()
-			if DT>4 and DT<=8:A=DIn[DT-5].value()
+			if DT>4 and DT<=8:A=DIn[DT-5].value
 			if DT>8 and DT<=10:A=AIn[DT-9].read_u16()>>12;
 			if DT==11:A=rcIn(0)>>4
 			if DT==12:A=rcIn(1)>>4
@@ -357,8 +369,8 @@ def run():
 			if DT==1:s=A>B
 			if DT==2:s=A<B
 			if DT==3:s=A==B
-			if DT>=4 and DT<=7:s=DIn[DT%4].value()&1==1
-			if DT>=8 and DT<=11:s=DIn[DT%4].value()&1==0
+			if DT>=4 and DT<=7:s=DIn[DT%4].value &1==1
+			if DT>=8 and DT<=11:s=DIn[DT%4].value &1==0
 			if DT==12:s=PRG.is_pressed()
 			if DT==13:s=SEL.is_pressed()
 			if DT==14:s=not PRG.is_pressed()
@@ -385,8 +397,8 @@ def run():
 			if DT==10:analogOutByte(3, A)
 			if DT==11:servoOutByte(2, A)
 			if DT==12:servoOutByte(3, A)
-			if DT==13:Led.value(1)
-			if DT==14:Led.value(0)
+			if DT==13:Led.value=1
+			if DT==14:Led.value=0
 			if DT==15:PC=0;continue
 		A=A&255;B=B&255;C=C&255;D=D&255;E=E&255;F=F&255;PC=(PC+1)%E2E
 	return
