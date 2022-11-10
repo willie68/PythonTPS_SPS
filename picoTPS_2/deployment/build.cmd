@@ -18,4 +18,5 @@ echo after that simply start the container again with "docker run -it --name pic
 echo you will find the builded artefacts on this computer in ../dest and on the docker container in ../dest
 pause
 
-docker rm pico-tps-builder
+docker rm pico-tps-builder -f -v
+docker rmi pico-tps-builder -f

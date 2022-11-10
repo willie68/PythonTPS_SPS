@@ -18,6 +18,7 @@ cd ports/raspberrypi
 
 mkdir modules
 
-cp ../../../main.py modules/main.py
+cp ../../../boot.py modules/boot.py
+cp ../../../cody.py modules/code.py
 
-make BOARD=raspberry_pi_pico
+make -j BOARD=raspberry_pi_pico
