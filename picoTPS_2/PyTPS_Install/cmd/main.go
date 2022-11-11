@@ -79,7 +79,7 @@ func main() {
 	if err != nil {
 		exit("can't load config file \"%s\": %v", src, err)
 	}
-	log.Infof("installer script loaded")
+	log.Info("installer script loaded")
 
 	err = downloadNeededFiles()
 	if err != nil {

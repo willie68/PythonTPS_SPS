@@ -4,7 +4,9 @@ import os
 import errno
 import board
 import usb_cdc
+import microcontroller
 from digitalio import DigitalInOut, Direction, Pull
+from analogio import AnalogIn
 from pwmio import PWMOut
 
 # classes we need
@@ -18,6 +20,7 @@ class Button:
 # constants
 MINSRV=1500
 MAXSRV=8000
+CR=bytearray('\r\n')
 
 BLINK_DELAY=500
 SHOW_DELAY=1000
@@ -37,15 +40,18 @@ DEMO_PRG = [0x4F, 0x59, 0x1F, 0x29, 0x10, 0x29, 0x5A, 0x40,
 # variables we need
 E2E=1024
 p=bytearray(E2E)
+PN='raspberry pi pico'
 SB=[0,0,0,0,0,0]
-TFN='tps.bin'
+TFN='tps.bin' #filename of the tps bin file
 WT=[1,2,5]
+DBG = False # debug mode
+ST = False # single step
 
 # hardware pins
 DIn=[DigitalInOut(board.GP6),DigitalInOut(board.GP7),DigitalInOut(board.GP8),DigitalInOut(board.GP9)]
 DOut=[DigitalInOut(board.GP2),DigitalInOut(board.GP3),DigitalInOut(board.GP4),DigitalInOut(board.GP5)]
 AOut=[PWMOut(board.GP16, frequency=50, duty_cycle=0),PWMOut(board.GP17, frequency=50, duty_cycle=0),PWMOut(board.GP20, frequency=50, duty_cycle=0),PWMOut(board.GP21, frequency=50, duty_cycle=0)]
-#AIn=[ADC(Pin(26)),ADC(Pin(27))]
+AIn=[AnalogIn(board.GP26),AnalogIn(board.GP27)]
 #RCIn=[Pin(14), Pin(15)]
 Led = DigitalInOut(board.LED)
 Led.direction = Direction.OUTPUT
@@ -55,8 +61,10 @@ SEL = Button(board.GP10)
 #Debug serial
 serial = usb_cdc.data
 def map(a,x1,y1,x2,y2):return int((a-x1)*(y2-x2)/(y1-x1)+x2)
-def write(msg): sys.stdout.write(msg)
-def writeln(msg): sys.stdout.write(msg);sys.stdout.write('\r\n');
+def write(msg): serial.write(bytearray(msg))
+def writeln(msg):
+    write(msg);
+    serial.write(CR);
 def hi_nib(pb):return p[pb]>>4&15
 def lo_nib(pb):return p[pb]&15
 def get_nib(pb,nib):
@@ -72,13 +80,27 @@ def nibbleToHex(value):
 	c=value&15
 	if c>=0 and c<=9:return chr(c+ord('0'))
 	if c>=10 and c<=15:return chr(c-10+ord('A'))
-def printCheckSum(value):checksum=value&255;checksum=(checksum^255)+1;printHex8(checksum);writeln()
+def printCheckSum(value):checksum=value&255;checksum=(checksum^255)+1;printHex8(checksum);writeln('')
 def printHex4(num):write(nibbleToHex(num))
-def printHex8(num):write('0x');write(nibbleToHex(num>>4));write(nibbleToHex(num));
+def printHex8(num):write(nibbleToHex(num>>4));write(nibbleToHex(num));
 def printHex16(num):printHex8(num>>8);printHex8(num)
-def printHex16d(num):write("0x%0.4X" % num)
+def printHex16d(num):write("%0.4X" % num)
+def writeProgramSerial():
+	writeln('program data:');checksum=0
+	for pc in range(E2E):
+		value=p[pc]
+		if pc%8==0:
+			if pc>0:printCheckSum(checksum)
+			checksum=0;write(':08');checksum+=8;printHex16(pc);checksum+=pc>>8;checksum+=pc&255;write('00')
+		printHex8(value);checksum+=value
+	printCheckSum(checksum);writeln(':00000001FF')
+def dgo(d):
+	if d:writeln('dbg on')
+	else:writeln('dbg off')
 def waitKeyboard():writeln('waiting for command:');writeln('w: write HEX file, r: read file, e: end')
-
+def getNextChar():
+	while serial.in_waiting == 0:sleep(10)
+	c=serial.read(1);return chr(c[0])
 #output 
 def doOut(data):
 	for i in range(4):DOut[i].value = (data&1<<i)>0
@@ -106,7 +128,6 @@ def servoOutByte(ch, data):
 	AOut[ch].duty_cycle=v
 def waitPRG():
 	while PRG.is_pressed():0
-	
 #read rc channel
 def rcIn(p):
     t=int(machine.time_pulse_us(RCIn[p],1,40000))
@@ -131,9 +152,33 @@ def init():
 	except OSError:
 		for i in range(len(DEMO_PRG)):p[i]=DEMO_PRG[i]
 		save(TFN)
-		
-	
-def serialprg(baud):
+
+def serialprg():
+	eOfp=False;write(CR);writeln(PN);waitKeyboard()
+	while not eOfp:
+		while serial.in_waiting>0:
+			c=serial.read(1);ch=chr(c[0])
+			if ch=='w':
+				writeln('ready');eOfF=False;data=bytearray(32)
+				while True:
+					for i in range(8):data[i]=255
+					while True:
+						c=getNextChar()
+						if c==':':break
+					c=getNextChar();count=hexToByte(c)<<4;c=getNextChar();count+=hexToByte(c);crc=count;c=getNextChar();readAddress=hexToByte(c)<<12;c=getNextChar();readAddress+=hexToByte(c)<<8;c=getNextChar();readAddress+=hexToByte(c)<<4;c=getNextChar();readAddress+=hexToByte(c);crc+=readAddress>>8;crc+=readAddress&255;c=getNextChar();type=hexToByte(c)<<4;c=getNextChar();type+=hexToByte(c);crc+=type
+					if type==1:eOfF=True
+					for x in range(count):c=getNextChar();value=hexToByte(c)<<4;c=getNextChar();value+=hexToByte(c);data[x]=value;crc+=value
+					c=getNextChar();readcrc=hexToByte(c)<<4;c=getNextChar();readcrc+=hexToByte(c);crc+=readcrc;value=crc&255
+					if value==0:
+						write('ok')
+						for x in range(count):p[readAddress+x]=data[x]
+					else:writeln(', CRC Error');eOfF=True
+					writeln('')
+					if eOfF:break
+				writeln('endOfFile');save(TFN)
+			elif ch=='r':load(TFN);writeProgramSerial()
+			elif ch=='e':writeln('end');eOfp=True
+			else:waitKeyboard()
 	return
 
 def save(fn):
@@ -147,6 +192,10 @@ def load(fn):
 		with open(fn,'rb')as mb:mb.readinto(p)
 	except OSError as exc:
 		print("error opnening file: ", errno.errorcode[exc.errno], '\r\n')
+
+def reset():
+	writeln('resetting')
+	microcontroller.reset()
 
 def sleep(ms):
 	time.sleep(ms/1000)
@@ -281,6 +330,7 @@ def run():
 	time.sleep(0.2)
 	Led.value = 0
 	A=0;B=0;C=0;D=0;E=0;F=0;PC=0;PG=0;RT=0;CD=0;DT=0;STP=0
+	DBG=False
 	
 	load(TFN)
 
@@ -288,15 +338,20 @@ def run():
 	
 	while True:
 		CD=p[PC]>>4;DT=p[PC]&15
-#		if uart.any():
-#		    c=uart.read(1);ch=chr(c[0])
-#		    if ch=='d':DBG=not DBG;dgo(DBG);
-#		    if ch=='p':serialprg(BR);reset();
-#		if DBG:
-#			writeln('-');uart.write('PC: ');printHex16(PC);writeln('');uart.write('INST: ');printHex4(IN);uart.write(', DATA: ');printHex4(DT);writeln('');writeln('Register:');uart.write('A: ');printHex8(A);uart.write(', B: ');printHex8(B);uart.write(', C: ');printHex8(C);writeln('');uart.write('D: ');printHex8(D);uart.write(', E: ');printHex8(E);uart.write(', F: ');printHex8(F);writeln('');uart.write('Page: ');printHex8(PG);uart.write(', Ret: ');printHex16(RT);writeln('')
-#			if ST:
-#				line=''
-#				while not line:line=uart.readline()
+		if serial.in_waiting > 0:
+		    c=serial.read(1);ch=chr(c[0])
+		    if ch=='d':DBG=not DBG;dgo(DBG);
+		    if ch=='p':serialprg();reset();
+		if DBG:
+			writeln('-')
+			write('PC: ');printHex16(PC);writeln('')
+			write('INST: ');printHex4(CD);write(', DATA: ');printHex4(DT);writeln('')
+			writeln('Register:');write('A: ');printHex8(A);write(', B: ');printHex8(B);write(', C: ');printHex8(C);writeln('')
+			write('D: ');printHex8(D);write(', E: ');printHex8(E);write(', F: ');printHex8(F);writeln('')
+			write('Page: ');printHex8(PG);write(', Ret: ');printHex16(RT);writeln('')
+			if ST:
+				line=''
+				while not line:line=uart.readline()
 		#DOut
 		if CD==1: doOut(DT)
 		#Sleep
@@ -331,7 +386,7 @@ def run():
 			if DT==3:A=D
 			if DT==4:A=doIn()
 			if DT>4 and DT<=8:A=DIn[DT-5].value
-			if DT>8 and DT<=10:A=AIn[DT-9].read_u16()>>12;
+			if DT>8 and DT<=10:A=AIn[DT-9].value>>12;
 			if DT==11:A=rcIn(0)>>4
 			if DT==12:A=rcIn(1)>>4
 			if DT==13:A=E
@@ -382,8 +437,8 @@ def run():
 			if DT>=1 and DT<=6:RT=PC;PC=SB[DT-1];continue
 			if DT==15:reset()
 		if CD==15:
-			if DT==0: A=AIn[0].read_u16()>>8
-			if DT==1:A=AIn[1].read_u16()>>8
+			if DT==0: A=AIn[0].value>>8
+			if DT==1:A=AIn[1].value>>8
 			if DT==2:A=rcIn(0)
 			if DT==3:A=rcIn(1)
 			if DT==4:analogOutByte(0, A)
@@ -406,7 +461,7 @@ def run():
 writeln('RPI Pico\r\nrunning pico TPS')
 init()
 if PRG.is_pressed():prg()
-if SEL.is_pressed:serialprg(9600)
+if SEL.is_pressed():serialprg()
 writeln('running program')
 run()
 writeln('ready')
