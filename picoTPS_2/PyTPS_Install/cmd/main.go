@@ -9,7 +9,9 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/willie68/PythonTPS_SPS/picoTPS_2/PyTPS_Install/internal/config"
 	"github.com/willie68/PythonTPS_SPS/picoTPS_2/PyTPS_Install/internal/utils"
@@ -44,7 +46,7 @@ func main() {
 			log.Errorf("drive can't be selected automatically: %v", err)
 		}
 		log.Infof("found drive \"%s\" as pico drive", drive)
-		fmt.Printf("Is \"%s\" this the raspberry pi pico drive? [Y/n]:", drive)
+		fmt.Printf("Is \"%s\" the raspberry pi pico drive? [Y/n]:", drive)
 		fmt.Scanln(&input)
 		if (strings.ToLower(input) != "y") && (input != "") {
 			fmt.Print("Input drive letter [type . for exit]:")
@@ -77,7 +79,7 @@ func main() {
 	if err != nil {
 		exit("can't load config file \"%s\": %v", src, err)
 	}
-	log.Infof("config loaded: %v", config.Config.Json())
+	log.Infof("installer script loaded")
 
 	err = downloadNeededFiles()
 	if err != nil {
@@ -87,9 +89,33 @@ func main() {
 	//   download the needed files
 	// checking the files
 	// copy circuitpython uf2 file to mcu
+	err = copyFirmware()
+	if err != nil {
+		exit("can't copy firware file: %v", err)
+	}
 	// wait til reset
+	log.Info("waiting some seconds for pico to reboot")
+	time.Sleep(5 * time.Second)
+	fmt.Printf("Is \"%s\" the circuit drive? [Y/n]:", drive)
+	input = ""
+	fmt.Scanln(&input)
+	if (strings.ToLower(input) != "y") && (input != "") {
+		fmt.Print("Input drive letter [type . for exit]:")
+		fmt.Scanln(&input)
+		if input != "." {
+			drive = fmt.Sprintf("%s:", input)
+		}
+	}
+	if input == "." {
+		exit("user exit on drive select")
+	}
 	// checking for the circuit python drive
 	// copy the application
+	err = copyTPSFiles()
+	if err != nil {
+		exit("can't copy firware file: %v", err)
+	}
+	log.Info("to start the tps, please reset the pico!")
 	// try restart
 	removeTempData()
 	// finished
@@ -124,8 +150,17 @@ func downloadNeededFiles() error {
 			return err
 		}
 		Download(config.Config.Firmware, tf)
-		config.Co
-		nfig.Firmware = tf
+		config.Config.Firmware = tf
+	}
+	for k, v := range config.Config.Tps {
+		if IsUrl(v) {
+			tf, err := utils.GetTempName(path.Base(v))
+			if err != nil {
+				return err
+			}
+			Download(v, tf)
+			config.Config.Tps[k] = tf
+		}
 	}
 	return nil
 }
@@ -138,6 +173,9 @@ func Download(src string, file string) error {
 	defer resp.Body.Close()
 
 	out, err := os.Create(file)
+	if err != nil {
+		return err
+	}
 	defer out.Close()
 	defer resp.Body.Close()
 
@@ -162,4 +200,50 @@ func exit(format string, a ...any) {
 		log.Info(fmt.Sprintf(format, a) + ". Exit.")
 	}
 	os.Exit(1)
+}
+
+func copyFirmware() error {
+	base := path.Base(filepath.ToSlash(config.Config.Firmware))
+	log.Infof("copy file %s", base)
+	file := filepath.Join(drive, base)
+
+	in, err := os.Open(config.Config.Firmware)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	return err
+}
+
+func copyTPSFiles() error {
+	for k, v := range config.Config.Tps {
+		log.Infof("copy file %s", k)
+		file := filepath.Join(drive, k)
+
+		in, err := os.Open(v)
+		if err != nil {
+			return err
+		}
+		defer in.Close()
+
+		out, err := os.Create(file)
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+
+		_, err = io.Copy(out, in)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

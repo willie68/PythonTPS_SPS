@@ -24,15 +24,23 @@ var Levels = []string{LvlDebug, LvlInfo, LvlAlert, LvlError, LvlFatal}
 ServiceLogger main type for logging
 */
 type serviceLogger struct {
-	Level    string
-	LevelInt int
-	SystemID string
-	Attrs    map[string]interface{}
-	Filename string
+	Level     string
+	LevelInt  int
+	SystemID  string
+	Attrs     map[string]interface{}
+	Filename  string
+	LvlPrefix bool
 }
 
 // Logger to use for all logging
-var Logger serviceLogger
+var Logger = serviceLogger{
+	LvlPrefix: false,
+}
+
+func init() {
+	log.SetPrefix("")
+	log.SetFlags(0)
+}
 
 // convinient methods
 func SetLevel(level string) {
@@ -140,7 +148,11 @@ Debug log this message at debug level
 */
 func (s *serviceLogger) Debug(msg string) {
 	if s.LevelInt <= 0 {
-		log.Printf("Debug: %s\n", msg)
+		if s.LvlPrefix {
+			log.Printf("Debug: %s\n", msg)
+		} else {
+			log.Printf("%s\n", msg)
+		}
 	}
 }
 
@@ -149,7 +161,11 @@ Debugf log this message at debug level with formatting
 */
 func (s *serviceLogger) Debugf(format string, va ...interface{}) {
 	if s.LevelInt <= 0 {
-		log.Printf("Debug: %s\n", fmt.Sprintf(format, va...))
+		if s.LvlPrefix {
+			log.Printf("Debug: %s\n", fmt.Sprintf(format, va...))
+		} else {
+			log.Printf("%s\n", fmt.Sprintf(format, va...))
+		}
 	}
 }
 
@@ -158,7 +174,11 @@ Info log this message at info level
 */
 func (s *serviceLogger) Info(msg string) {
 	if s.LevelInt <= 1 {
-		log.Printf("Info: %s\n", msg)
+		if s.LvlPrefix {
+			log.Printf("Info: %s\n", msg)
+		} else {
+			log.Printf("%s\n", msg)
+		}
 	}
 }
 
@@ -167,7 +187,11 @@ Infof log this message at info level with formatting
 */
 func (s *serviceLogger) Infof(format string, va ...interface{}) {
 	if s.LevelInt <= 1 {
-		log.Printf("Info: %s\n", fmt.Sprintf(format, va...))
+		if s.LvlPrefix {
+			log.Printf("Info: %s\n", fmt.Sprintf(format, va...))
+		} else {
+			log.Printf("%s\n", fmt.Sprintf(format, va...))
+		}
 	}
 }
 
@@ -176,7 +200,11 @@ Alert log this message at alert level
 */
 func (s *serviceLogger) Alert(msg string) {
 	if s.LevelInt <= 2 {
-		log.Printf("Alert: %s\n", msg)
+		if s.LvlPrefix {
+			log.Printf("Alert: %s\n", msg)
+		} else {
+			log.Printf("%s\n", msg)
+		}
 	}
 }
 
@@ -185,35 +213,55 @@ Alertf log this message at alert level with formatting.
 */
 func (s *serviceLogger) Alertf(format string, va ...interface{}) {
 	if s.LevelInt <= 2 {
-		log.Printf("Alert: %s\n", fmt.Sprintf(format, va...))
+		if s.LvlPrefix {
+			log.Printf("Alert: %s\n", fmt.Sprintf(format, va...))
+		} else {
+			log.Printf("%s\n", fmt.Sprintf(format, va...))
+		}
 	}
 }
 
 // Fatal logs a message at level Fatal on the standard logger.
 func (s *serviceLogger) Fatal(msg string) {
 	if s.LevelInt <= 4 {
-		log.Fatalf("Fatal: %s\n", msg)
+		if s.LvlPrefix {
+			log.Fatalf("Fatal: %s\n", msg)
+		} else {
+			log.Fatalf("%s\n", msg)
+		}
 	}
 }
 
 // Fatalf logs a message at level Fatal on the standard logger with formatting.
 func (s *serviceLogger) Fatalf(format string, va ...interface{}) {
 	if s.LevelInt <= 4 {
-		log.Fatalf("Fatal: %s\n", fmt.Sprintf(format, va...))
+		if s.LvlPrefix {
+			log.Fatalf("Fatal: %s\n", fmt.Sprintf(format, va...))
+		} else {
+			log.Fatalf("%s\n", fmt.Sprintf(format, va...))
+		}
 	}
 }
 
 // Error logs a message at level Error on the standard logger.
 func (s *serviceLogger) Error(msg string) {
 	if s.LevelInt <= 3 {
-		log.Printf("Error: %s\n", msg)
+		if s.LvlPrefix {
+			log.Printf("Error: %s\n", msg)
+		} else {
+			log.Printf("%s\n", msg)
+		}
 	}
 }
 
 // Errorf logs a message at level Error on the standard logger with formatting.
 func (s *serviceLogger) Errorf(format string, va ...interface{}) {
 	if s.LevelInt <= 3 {
-		log.Printf("Error: %s\n", fmt.Sprintf(format, va...))
+		if s.LvlPrefix {
+			log.Printf("Error: %s\n", fmt.Sprintf(format, va...))
+		} else {
+			log.Printf("%s\n", fmt.Sprintf(format, va...))
+		}
 	}
 }
 
