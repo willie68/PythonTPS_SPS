@@ -38,43 +38,57 @@ func main() {
 
 	var err error
 	var input string
+	driveok := false
 	// if no drive given
 	if drive == "" {
-		//   selecting the right drive
+		//   auto selecting the right drive
 		drive, err = selectDrive()
 		if err != nil {
-			log.Errorf("drive can't be selected automatically: %v", err)
+			log.Errorf("drive can't be selected automatically: %s", err.Error())
+			log.Info("Dont forget: restart the pico with bootsel pressed!")
+			input = "n"
+			driveok = false
+		} else {
+			driveok = true
 		}
-		log.Infof("found drive \"%s\" as pico drive", drive)
-		fmt.Printf("Is \"%s\" the raspberry pi pico drive? [Y/n]:", drive)
-		fmt.Scanln(&input)
-		if (strings.ToLower(input) != "y") && (input != "") {
-			fmt.Print("Input drive letter [type . for exit]:")
+		if drive != "" {
+			// if we found a drive
+			log.Infof("found drive \"%s\" as pico drive", drive)
+			fmt.Printf("Is \"%s\" the raspberry pi pico drive? [Y/n]:", drive)
 			fmt.Scanln(&input)
-			if input != "." {
-				drive = fmt.Sprintf("%s:", input)
+			if input == "" {
+				input = "y"
+			}
+			if strings.ToLower(input) == "y" {
+				// override check
+				driveok = true
 			}
 		}
-		if input == "." {
-			exit("user exit on drive select")
-		}
-	}
-	// checking the drive
-	driveok := false
-	for !driveok {
-		err = checkDrive(drive)
-		if err != nil {
-			log.Errorf("error on reading dir: %v", err)
+		for !driveok {
+			if drive != "" {
+				log.Info("to override drive check, press +")
+			}
+			fmt.Print("Input drive letter [type . for exit]:")
 			fmt.Print("Input drive letter [type . for exit]:")
 			fmt.Scanln(&input)
 			if input == "." {
 				exit("user exit on drive select")
 			}
+			if input == "+" {
+				log.Info("override drive check")
+				driveok = true
+				break
+			}
 			drive = fmt.Sprintf("%s:", input)
-		} else {
-			driveok = true
+			err = checkDrive(drive)
+			if err == nil {
+				driveok = true
+			} else {
+				log.Info(err.Error())
+			}
 		}
 	}
+
 	err = config.Load(src)
 	if err != nil {
 		exit("can't load config file \"%s\": %v", src, err)
@@ -123,7 +137,13 @@ func main() {
 }
 
 func selectDrive() (string, error) {
-	return "C:", nil
+	for _, drive := range "DEFGHIJKLMNOPQRSTUVWXYZ" {
+		err := checkDrive(string(drive) + ":")
+		if err == nil {
+			return string(drive) + ":", nil
+		}
+	}
+	return "", errors.New("no compatible drive found")
 }
 
 func checkDrive(drive string) error {
@@ -140,7 +160,7 @@ func checkDrive(drive string) error {
 	if found {
 		return nil
 	}
-	return errors.New("drive seems not to be an raspberry pi pico drive. Do you restart the pico with bootsel pressed?")
+	return fmt.Errorf("drive \"%s\" seems not to be an raspberry pi pico drive.", drive)
 }
 
 func downloadNeededFiles() error {
