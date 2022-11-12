@@ -69,7 +69,6 @@ func main() {
 				log.Info("to override drive check, press +")
 			}
 			fmt.Print("Input drive letter [type . for exit]:")
-			fmt.Print("Input drive letter [type . for exit]:")
 			fmt.Scanln(&input)
 			if input == "." {
 				exit("user exit on drive select")

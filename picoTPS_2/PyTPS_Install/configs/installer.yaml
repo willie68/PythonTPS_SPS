@@ -1,4 +1,5 @@
-firmware: https://downloads.circuitpython.org/bin/raspberry_pi_pico/en_US/adafruit-circuitpython-raspberry_pi_pico-en_US-7.3.3.uf2
+firmware: https://raw.githubusercontent.com/willie68/PythonTPS_SPS/master/picoTPS_2/circuitpython/adafruit-circuitpython-raspberry_pi_pico-en_US-7.3.3.uf2
+wipeware: https://raw.githubusercontent.com/willie68/PythonTPS_SPS/master/picoTPS_2/circuitpython/flash_nuke.uf2
 tps:
-  boot.py: H:/privat/git-sourcen/PythonTPS_SPS/picoTPS_2/boot.py
-  code.py: H:/privat/git-sourcen/PythonTPS_SPS/picoTPS_2/code.py
+  boot.py: https://raw.githubusercontent.com/willie68/PythonTPS_SPS/master/picoTPS_2/boot.py
+  code.py: https://raw.githubusercontent.com/willie68/PythonTPS_SPS/master/picoTPS_2/code.py
