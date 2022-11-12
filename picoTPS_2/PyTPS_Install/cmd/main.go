@@ -22,8 +22,9 @@ import (
 )
 
 var (
-	drive string
-	src   string
+	drive     string
+	src       string
+	wipeflash bool
 )
 
 func init() {
@@ -31,11 +32,15 @@ func init() {
 	log.Logger.Info("init PyTPS Install")
 	flag.StringVarP(&drive, "drive", "d", "", "drive of the Raspberry Pi Pico.")
 	flag.StringVarP(&src, "src", "s", "", "where to find the needed files. Default: internet download")
+	flag.BoolVarP(&wipeflash, "wipe", "w", false, "wipe the flash before installing, for emergency cases.")
 }
 
 func main() {
 	flag.Parse()
 
+	if wipeflash {
+		log.Info("wiping flash before installation")
+	}
 	var err error
 	var input string
 	driveok := false
@@ -98,13 +103,40 @@ func main() {
 	if err != nil {
 		exit("can't download needed files: %v", err)
 	}
-	// if no src given
-	//   download the needed files
-	// checking the files
+	// copy flash wiping uf2 file to mcu
+	if wipeflash {
+		log.Info("wiping flash of pico")
+		fmt.Print("Do you really want to clean the flash? All data will be lost. [y/N]:")
+		input = ""
+		fmt.Scanln(&input)
+		if strings.ToLower(input) == "y" {
+			err = copyWipeware()
+			if err != nil {
+				exit("can't copy wipeware file: %v", err)
+			}
+			// wait til reset
+			log.Info("waiting some seconds for pico to reboot")
+			time.Sleep(10 * time.Second)
+			fmt.Printf("Is \"%s\" the pico drive? [Y/n]:", drive)
+			input = ""
+			fmt.Scanln(&input)
+			if (strings.ToLower(input) != "y") && (input != "") {
+				fmt.Print("Input drive letter [type . for exit]:")
+				fmt.Scanln(&input)
+				if input != "." {
+					drive = fmt.Sprintf("%s:", input)
+				}
+			}
+			if input == "." {
+				exit("user exit on drive select")
+			}
+		}
+	}
+
 	// copy circuitpython uf2 file to mcu
 	err = copyFirmware()
 	if err != nil {
-		exit("can't copy firware file: %v", err)
+		exit("can't copy firmware file: %v", err)
 	}
 	// wait til reset
 	log.Info("waiting some seconds for pico to reboot")
@@ -163,6 +195,7 @@ func checkDrive(drive string) error {
 }
 
 func downloadNeededFiles() error {
+	// download firmware, if needed
 	if IsUrl(config.Config.Firmware) {
 		tf, err := utils.GetTempName(path.Base(config.Config.Firmware))
 		if err != nil {
@@ -170,6 +203,15 @@ func downloadNeededFiles() error {
 		}
 		Download(config.Config.Firmware, tf)
 		config.Config.Firmware = tf
+	}
+	// download wipeware, if needed
+	if IsUrl(config.Config.Wipeware) && wipeflash {
+		tf, err := utils.GetTempName(path.Base(config.Config.Wipeware))
+		if err != nil {
+			return err
+		}
+		Download(config.Config.Wipeware, tf)
+		config.Config.Wipeware = tf
 	}
 	for k, v := range config.Config.Tps {
 		if IsUrl(v) {
@@ -219,6 +261,27 @@ func exit(format string, a ...any) {
 		log.Info(fmt.Sprintf(format, a) + ". Exit.")
 	}
 	os.Exit(1)
+}
+
+func copyWipeware() error {
+	base := path.Base(filepath.ToSlash(config.Config.Wipeware))
+	log.Infof("copy file %s", base)
+	file := filepath.Join(drive, base)
+
+	in, err := os.Open(config.Config.Wipeware)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	return err
 }
 
 func copyFirmware() error {

@@ -13,6 +13,7 @@ import (
 type config struct {
 	Installer string
 	Firmware  string            `yaml:"firmware"`
+	Wipeware  string            `yaml:"wipeware"`
 	Tps       map[string]string `yaml:"tps"`
 }
 
